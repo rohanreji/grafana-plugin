@@ -20,7 +20,19 @@ module.exports = function(grunt) {
           expand: true,
           src: [ 'plugin.json', 'README.md' ],
           dest: 'dist',
-        }
+        },
+        leaflet: {
+          cwd: 'node_modules/leaflet/dist/',
+          expand: true,
+          src: ['leaflet.js', 'leaflet.css', 'images'],
+          dest: 'dist/leaflet'
+        },
+        leaflet_img: {
+          cwd: 'node_modules/leaflet/dist/images',
+          expand: true,
+          src: '*',
+          dest: 'dist/leaflet/images/'
+  }
       },
   
       watch: {

@@ -1,9 +1,9 @@
 "use strict";
 
-System.register(["app/plugins/sdk", "moment"], function (_export, _context) {
+System.register(["app/plugins/sdk", "moment", "./css/clock-panel.css!"], function (_export, _context) {
   "use strict";
 
-  var PanelCtrl, moment, ClockCtrl;
+  var MetricsPanelCtrl, moment, ClockCtrl;
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -49,14 +49,6 @@ System.register(["app/plugins/sdk", "moment"], function (_export, _context) {
     return _assertThisInitialized(self);
   }
 
-  function _assertThisInitialized(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
   function _getPrototypeOf(o) {
     _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
@@ -88,29 +80,43 @@ System.register(["app/plugins/sdk", "moment"], function (_export, _context) {
     return _setPrototypeOf(o, p);
   }
 
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
   return {
     setters: [function (_appPluginsSdk) {
-      PanelCtrl = _appPluginsSdk.PanelCtrl;
+      MetricsPanelCtrl = _appPluginsSdk.MetricsPanelCtrl;
     }, function (_moment) {
       moment = _moment.default;
-    }],
+    }, function (_cssClockPanelCss) {}],
     execute: function () {
-      _export("ClockCtrl", ClockCtrl = function (_PanelCtrl) {
-        _inherits(ClockCtrl, _PanelCtrl);
+      _export("ClockCtrl", ClockCtrl = function (_MetricsPanelCtrl) {
+        _inherits(ClockCtrl, _MetricsPanelCtrl);
 
-        function ClockCtrl($scope, $injector) {
+        function ClockCtrl($scope, $injector, $timeout) {
           var _this;
 
           _classCallCheck(this, ClockCtrl);
 
           _this = _possibleConstructorReturn(this, _getPrototypeOf(ClockCtrl).call(this, $scope, $injector));
 
-          _this.updateClock();
+          _this.events.on('data-received', _this._onDataReceived.bind(_assertThisInitialized(_assertThisInitialized(_this)))); //this.updateClock();
+
 
           return _this;
         }
 
         _createClass(ClockCtrl, [{
+          key: "_onDataReceived",
+          value: function _onDataReceived(data) {
+            console.log(data);
+          }
+        }, {
           key: "updateClock",
           value: function updateClock() {
             var _this2 = this;
@@ -123,11 +129,9 @@ System.register(["app/plugins/sdk", "moment"], function (_export, _context) {
         }]);
 
         return ClockCtrl;
-      }(PanelCtrl));
+      }(MetricsPanelCtrl));
 
       _export("ClockCtrl", ClockCtrl);
-
-      ClockCtrl.templateUrl = 'module.html';
     }
   };
 });

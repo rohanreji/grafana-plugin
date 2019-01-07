@@ -1,5 +1,5 @@
-import {ClockCtrl} from './clock_ctrl';
+import {TrackMapCtrl} from './trackmap_ctrl';
 
 export {
-  ClockCtrl as PanelCtrl
+  TrackMapCtrl as PanelCtrl
 };

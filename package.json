@@ -23,6 +23,7 @@
     "load-grunt-tasks": "^4.0.0"
   },
   "dependencies": {
+    "leaflet": "^1.4.0",
     "lodash": "^4.17.11",
     "moment": "^2.23.0"
   }
