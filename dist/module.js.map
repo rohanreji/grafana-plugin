@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/module.js"],"names":["ClockCtrl"],"mappings":";;;;;;;;AAAQA,MAAAA,S,eAAAA,S;;;2BAGNA,S","sourcesContent":["import {ClockCtrl} from './clock_ctrl';\r\n\r\nexport {\r\n  ClockCtrl as PanelCtrl\r\n};"],"file":"module.js"}

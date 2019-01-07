@@ -1,0 +1,1 @@
+A test panel for Grafana.
