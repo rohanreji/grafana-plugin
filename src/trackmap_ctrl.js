@@ -22,6 +22,7 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
     this.timeSrv = $injector.get('timeSrv');
     this.coords = [];
     this.leafMap = null;
+    this.locationLayer = null;
     this.polyline = null;
     this.hoverMarker = null;
     this.hoverTarget = null;
@@ -115,19 +116,17 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
   setupMap() {
     // Create the map or get it back in a clean state if it already exists
     if (this.leafMap) {
-      if (this.polyline) {
-        this.polyline.removeFrom(this.leafMap);
-      }
       this.onPanelClear();
       return;
     }
 
     // Create the map
     this.leafMap = L.map('trackmap-' + this.panel.id, {
-      scrollWheelZoom: false,
+      scrollWheelZoom: true,
       zoomSnap: 0.5,
-      zoomDelta: 1,
+      zoomDelta: 1
     });
+    this.locationLayer = L.featureGroup().addTo(this.leafMap);
 
 
 
@@ -135,25 +134,9 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
 
 
     //check
-    var locationLayer = new L.FeatureGroup();
-	var svg = '<svg id="mePin" class="bounce" xmlns="http://www.w3.org/2000/svg" width="43.3" height="42.4" viewBox="0 0 43.3 42.4"><path class="ring_outer" fill="#878787" d="M28.6 23c6.1 1.4 10.4 4.4 10.4 8 0 4.7-7.7 8.6-17.3 8.6-9.6 0-17.4-3.9-17.4-8.6 0-3.5 4.2-6.5 10.3-7.9.7-.1-.4-1.5-1.3-1.3C5.5 23.4 0 27.2 0 31.7c0 6 9.7 10.7 21.7 10.7s21.6-4.8 21.6-10.7c0-4.6-5.7-8.4-13.7-10-.8-.2-1.8 1.2-1 1.4z"/><path class="ring_inner" fill="#5F5F5F" d="M27 25.8c2 .7 3.3 1.8 3.3 3 0 2.2-3.7 3.9-8.3 3.9-4.6 0-8.3-1.7-8.3-3.8 0-1 .8-1.9 2.2-2.6.6-.3-.3-2-1-1.6-2.8 1-4.6 2.7-4.6 4.6 0 3.2 5.1 5.7 11.4 5.7 6.2 0 11.3-2.5 11.3-5.7 0-2-2.1-3.9-5.4-5-.7-.1-1.2 1.3-.7 1.5z"/><path class="mePin" d="M21.6 8.1a4 4 0 0 0 4-4 4 4 0 0 0-4-4.1 4.1 4.1 0 0 0-4.1 4 4 4 0 0 0 4 4.1zm4.9 8v-3.7c0-1.2-.6-2.2-1.7-2.6-1-.4-1.9-.6-2.8-.6h-.9c-1 0-2 .2-2.8.6-1.2.4-1.8 1.4-1.8 2.6V16c0 .9 0 2 .2 2.8.2.8.8 1.5 1 2.3l.2.3.4 1 .1.8.2.7.6 3.6c-.6.3-.9.7-.9 1.2 0 .9 1.4 1.7 3.2 1.7 1.8 0 3.2-.8 3.2-1.7 0-.5-.3-.9-.8-1.2l.6-3.6.1-.7.2-.8.3-1 .1-.3c.3-.8 1-1.5 1.1-2.3.2-.8.2-2 .2-2.8z" fill="#282828"/></svg>';
-    var svg_cloud = '<svg class="clouds cloud1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0" y="0" width="512" height="512" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path id="cloud-icon" d="M406.1 227.63c-8.23-103.65-144.71-137.8-200.49-49.05 -36.18-20.46-82.33 3.61-85.22 45.9C80.73 229.34 50 263.12 50 304.1c0 44.32 35.93 80.25 80.25 80.25h251.51c44.32 0 80.25-35.93 80.25-80.25C462 268.28 438.52 237.94 406.1 227.63z"/></svg>'
     
-    var meIcon = L.divIcon({
-		className: "leaflet-data-marker",
-			html: svg_cloud.replace('#','%23'),
 
-			iconAnchor  : [22, 28],
-			iconSize    : [36, 42],
-			popupAnchor : [0, -30],
-		});
-
-	var meMarker = L.marker(L.latLng(12.9716, 77.5946), {
-			icon: meIcon,
-			title: '@me'
-		})
-
-	locationLayer.addLayer(meMarker).addTo(this.leafMap);
+	
 
 	//$('.mePin').addClass('bounce');
 
@@ -163,11 +146,13 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
     L.control.layers({
       'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19
+        maxZoom: 19,
+        //noWrap: true
       }).addTo(this.leafMap), // Add default layer to map
       'OpenTopoMap': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-        maxZoom: 17
+        maxZoom: 17,
+        //noWrap: true
       }),
       'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Imagery &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
@@ -176,11 +161,11 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
           attribution: 'Labels by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           subdomains: 'abcd',
           maxZoom: 20,
+          //noWrap: true
         })
       })
     }).addTo(this.leafMap);
 
-    // Dummy hovermarker
     this.hoverMarker = L.circleMarker(L.latLng(0, 0), {
       color: 'none',
       fillColor: 'none',
@@ -235,19 +220,60 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
 
   // Add the circles and polyline to the map
   addDataToMap() {
-    this.polyline = L.polyline(
-      this.coords.map(x => x.position, this), {
-        color: this.panel.lineColor,
-        weight: 3,
-      }
-    ).addTo(this.leafMap);
+    //console.log(this.coords);
+    this.locationLayer.clearLayers();
+    
+    for(var i=0;i<this.coords.length;i++) {
+      if(this.coords[i].pollution <= 50)
+          var svg_cloud = '<svg class="clouds cloud-green" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0" y="0" width="512" height="512" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path id="cloud-icon" d="M406.1 227.63c-8.23-103.65-144.71-137.8-200.49-49.05 -36.18-20.46-82.33 3.61-85.22 45.9C80.73 229.34 50 263.12 50 304.1c0 44.32 35.93 80.25 80.25 80.25h251.51c44.32 0 80.25-35.93 80.25-80.25C462 268.28 438.52 237.94 406.1 227.63z"/></svg>'
+      else if(this.coords[i].pollution <= 100)
+        var svg_cloud = '<svg class="clouds cloud-yellow" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0" y="0" width="512" height="512" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path id="cloud-icon" d="M406.1 227.63c-8.23-103.65-144.71-137.8-200.49-49.05 -36.18-20.46-82.33 3.61-85.22 45.9C80.73 229.34 50 263.12 50 304.1c0 44.32 35.93 80.25 80.25 80.25h251.51c44.32 0 80.25-35.93 80.25-80.25C462 268.28 438.52 237.94 406.1 227.63z"/></svg>'
+      else if(this.coords[i].pollution <= 150)
+        var svg_cloud = '<svg class="clouds cloud-orange" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0" y="0" width="512" height="512" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path id="cloud-icon" d="M406.1 227.63c-8.23-103.65-144.71-137.8-200.49-49.05 -36.18-20.46-82.33 3.61-85.22 45.9C80.73 229.34 50 263.12 50 304.1c0 44.32 35.93 80.25 80.25 80.25h251.51c44.32 0 80.25-35.93 80.25-80.25C462 268.28 438.52 237.94 406.1 227.63z"/></svg>'
+      else if(this.coords[i].pollution <= 200)
+        var svg_cloud = '<svg class="clouds cloud-red" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0" y="0" width="512" height="512" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path id="cloud-icon" d="M406.1 227.63c-8.23-103.65-144.71-137.8-200.49-49.05 -36.18-20.46-82.33 3.61-85.22 45.9C80.73 229.34 50 263.12 50 304.1c0 44.32 35.93 80.25 80.25 80.25h251.51c44.32 0 80.25-35.93 80.25-80.25C462 268.28 438.52 237.94 406.1 227.63z"/></svg>'
+      else if(this.coords[i].pollution <= 250)
+        var svg_cloud = '<svg class="clouds cloud-purple" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0" y="0" width="512" height="512" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path id="cloud-icon" d="M406.1 227.63c-8.23-103.65-144.71-137.8-200.49-49.05 -36.18-20.46-82.33 3.61-85.22 45.9C80.73 229.34 50 263.12 50 304.1c0 44.32 35.93 80.25 80.25 80.25h251.51c44.32 0 80.25-35.93 80.25-80.25C462 268.28 438.52 237.94 406.1 227.63z"/></svg>'
+    
+    var meIcon = L.divIcon({
+		className: "leaflet-data-marker",
+			html: svg_cloud.replace('#','%23'),
 
+			iconAnchor  : [22, 28],
+			iconSize    : [36, 42],
+			popupAnchor : [0, -30],
+		});
+      console.log(this.coords[i] + "llll");
+    var meMarker = L.marker(this.coords[i].position, {
+      icon: meIcon,
+      title: "AQI is "+ this.coords[i].pollution +" in " + this.coords[i].location
+    })
+
+    this.locationLayer.addLayer(meMarker);
+  }
     this.zoomToFit();
+
+  }
+  getMinOrMax(latLongObj,maxMin,latLong) {
+
+  }
+  getBounds (markersObj) {
+    var maxLat = getMinOrMax(markersObj, "max", "lat");
+    var minLat = getMinOrMax(markersObj, "min", "lat");
+    var maxLng = getMinOrMax(markersObj, "max", "lng");
+    var minLng = getMinOrMax(markersObj, "min", "lng");
+    var southWest = new L.LatLng(minLat, minLng);
+    var northEast = new L.LatLng(maxLat, maxLng);
+    return new L.LatLngBounds(southWest, northEast);
   }
 
   zoomToFit(){
     if (this.panel.autoZoom){
-      this.leafMap.fitBounds(this.polyline.getBounds());
+      // this.leafMap.fitWorld();
+//       var corner1 = L.latLng(40.712, -74.227),
+// corner2 = L.latLng(40.774, -74.125),
+// bounds = L.latLngBounds(corner1, corner2);
+this.leafMap.fitBounds(this.locationLayer.getBounds().pad(0.5));
     }
   }
 
@@ -261,27 +287,28 @@ export class TrackMapCtrl extends MetricsPanelCtrl {
 
   onDataReceived(data) {
     this.setupMap();
-    if (data.length === 0 || data.length !== 2) {
+    console.log(data.length);
+    if (data.length === 0 ) {
       // No data or incorrect data, show a world map and abort
       this.leafMap.setView([0, 0], 1);
       return;
     }
-
+    console.log(data);
     // Asumption is that there are an equal number of properly matched timestamps
     // TODO: proper joining by timestamp?
     this.coords.length = 0;
-    const lats = data[0].datapoints;
-    const lons = data[1].datapoints;
-    for (let i = 0; i < lats.length; i++) {
-      if (lats[i][0] == null || lons[i][0] == null ||
-          lats[i][1] !== lats[i][1]) {
-        continue;
-      }
-
+    for(var i=0;i<data[0].datapoints.length;i++) {
+      let aqi = data[0].datapoints[i][0];
+      let lat = data[1].datapoints[i];
+      let lon = data[2].datapoints[i];
+      const city = data[3].datapoints[i][0];
+      console.log(lat[0]);
       this.coords.push({
-        position: L.latLng(lats[i][0], lons[i][0]),
-        timestamp: lats[i][1]
-      });
+          position: L.latLng(lat[0], lon[0]),
+          location: city,
+          pollution: aqi,
+          timestamp: lat[1]
+        });
     }
     this.addDataToMap();
   }

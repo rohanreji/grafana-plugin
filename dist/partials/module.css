@@ -1,3 +1,6 @@
+html, body {
+  height: 100%;
+}
 .trackmap-panel {
     display: flex;
     align-items: center;
@@ -73,9 +76,41 @@
     height: 50px;
   }
   
-  .cloud1 {
+  .cloud-green {
     z-index: 100;
     fill:green;
+    /* Animation shorthand syntax order: name, duration, timing-function, delay, iteration-count, direction, fill-mode */
+    animation: zoom 1s infinite alternate;
+    -webkit-animation: zoom 1s infinite alternate;
+  }
+
+  .cloud-yellow {
+    z-index: 100;
+    fill:yellow;
+    /* Animation shorthand syntax order: name, duration, timing-function, delay, iteration-count, direction, fill-mode */
+    animation: zoom 1s infinite alternate;
+    -webkit-animation: zoom 1s infinite alternate;
+  }
+
+  .cloud-orange {
+    z-index: 100;
+    fill:orange;
+    /* Animation shorthand syntax order: name, duration, timing-function, delay, iteration-count, direction, fill-mode */
+    animation: zoom 1s infinite alternate;
+    -webkit-animation: zoom 1s infinite alternate;
+  }
+
+  .cloud-red {
+    z-index: 100;
+    fill:red;
+    /* Animation shorthand syntax order: name, duration, timing-function, delay, iteration-count, direction, fill-mode */
+    animation: zoom 1s infinite alternate;
+    -webkit-animation: zoom 1s infinite alternate;
+  }
+
+  .cloud-purple {
+    z-index: 100;
+    fill:purple;
     /* Animation shorthand syntax order: name, duration, timing-function, delay, iteration-count, direction, fill-mode */
     animation: zoom 1s infinite alternate;
     -webkit-animation: zoom 1s infinite alternate;
