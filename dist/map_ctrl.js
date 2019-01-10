@@ -3,7 +3,7 @@
 System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/plugins/sdk", "./leaflet/leaflet.css!", "./partials/module.css!"], function (_export, _context) {
   "use strict";
 
-  var L, moment, appEvents, MetricsPanelCtrl, panelDefaults, TrackMapCtrl;
+  var L, moment, appEvents, MetricsPanelCtrl, panelDefaults, MapCtrl;
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -101,30 +101,25 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
     execute: function () {
       panelDefaults = {
         maxDataPoints: 500,
-        autoZoom: true,
-        lineColor: 'red',
-        pointColor: 'royalblue'
+        autoZoom: true
       };
 
-      _export("TrackMapCtrl", TrackMapCtrl = function (_MetricsPanelCtrl) {
-        _inherits(TrackMapCtrl, _MetricsPanelCtrl);
+      _export("MapCtrl", MapCtrl = function (_MetricsPanelCtrl) {
+        _inherits(MapCtrl, _MetricsPanelCtrl);
 
-        function TrackMapCtrl($scope, $injector) {
+        function MapCtrl($scope, $injector) {
           var _this;
 
-          _classCallCheck(this, TrackMapCtrl);
+          _classCallCheck(this, MapCtrl);
 
-          _this = _possibleConstructorReturn(this, _getPrototypeOf(TrackMapCtrl).call(this, $scope, $injector));
+          _this = _possibleConstructorReturn(this, _getPrototypeOf(MapCtrl).call(this, $scope, $injector));
 
           _.defaults(_this.panel, panelDefaults);
 
           _this.timeSrv = $injector.get('timeSrv');
           _this.coords = [];
           _this.leafMap = null;
-          _this.locationLayer = null;
-          _this.polyline = null;
-          _this.hoverMarker = null;
-          _this.hoverTarget = null; // Panel events
+          _this.locationLayer = null; // Panel events
 
           _this.events.on('init-edit-mode', _this.onInitEditMode.bind(_assertThisInitialized(_assertThisInitialized(_this))));
 
@@ -132,18 +127,15 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
 
           _this.events.on('panel-size-changed', _this.onPanelSizeChanged.bind(_assertThisInitialized(_assertThisInitialized(_this))));
 
-          _this.events.on('data-received', _this.onDataReceived.bind(_assertThisInitialized(_assertThisInitialized(_this)))); // Global events
+          _this.events.on('data-received', _this.onDataReceived.bind(_assertThisInitialized(_assertThisInitialized(_this))));
 
-
-          appEvents.on('graph-hover', _this.onPanelHover.bind(_assertThisInitialized(_assertThisInitialized(_this))));
-          appEvents.on('graph-hover-clear', _this.onPanelClear.bind(_assertThisInitialized(_assertThisInitialized(_this))));
           return _this;
         }
 
-        _createClass(TrackMapCtrl, [{
+        _createClass(MapCtrl, [{
           key: "onInitEditMode",
-          value: function onInitEditMode() {
-            this.addEditorTab('Options', 'public/plugins/pr0ps-trackmap-panel/partials/options.html', 2);
+          value: function onInitEditMode() {//Editor tab needs to be edited
+            // this.addEditorTab('Options', 'public/plugins/test-panel/partials/options.html', 2);
           }
         }, {
           key: "onPanelTeardown",
@@ -151,68 +143,9 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
             this.$timeout.cancel(this.nextTickPromise);
           }
         }, {
-          key: "onPanelHover",
-          value: function onPanelHover(evt) {
-            if (this.coords.length === 0) {
-              return;
-            } // check if we are already showing the correct hoverMarker
-
-
-            var target = Math.floor(evt.pos.x);
-
-            if (this.hoverTarget && this.hoverTarget === target) {
-              return;
-            } // check for initial show of the marker
-
-
-            if (this.hoverTarget == null) {
-              this.hoverMarker.bringToFront().setStyle({
-                fillColor: this.panel.pointColor,
-                color: 'white'
-              });
-            }
-
-            this.hoverTarget = target; // Find the currently selected time and move the hoverMarker to it
-            // Note that an exact match isn't always going to work due to rounding so
-            // we clean that up later (still more efficient)
-
-            var min = 0;
-            var max = this.coords.length - 1;
-            var idx = null;
-            var exact = false;
-
-            while (min <= max) {
-              idx = Math.floor((max + min) / 2);
-
-              if (this.coords[idx].timestamp === this.hoverTarget) {
-                exact = true;
-                break;
-              } else if (this.coords[idx].timestamp < this.hoverTarget) {
-                min = idx + 1;
-              } else {
-                max = idx - 1;
-              }
-            } // Correct the case where we are +1 index off
-
-
-            if (!exact && idx > 0 && this.coords[idx].timestamp > this.hoverTarget) {
-              idx--;
-            }
-
-            this.hoverMarker.setLatLng(this.coords[idx].position);
-          }
-        }, {
           key: "onPanelClear",
           value: function onPanelClear(evt) {
-            // clear the highlighted circle
-            this.hoverTarget = null;
-
-            if (this.hoverMarker) {
-              this.hoverMarker.setStyle({
-                fillColor: 'none',
-                color: 'none'
-              });
-            }
+            this.locationLayer.clearLayers();
           }
         }, {
           key: "onPanelSizeChanged",
@@ -236,22 +169,17 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
               zoomSnap: 0.5,
               zoomDelta: 1
             });
-            this.locationLayer = L.featureGroup().addTo(this.leafMap); //check
-            //$('.mePin').addClass('bounce');
-            //check
-            // Define layers and add them to the control widget
+            this.locationLayer = L.featureGroup().addTo(this.leafMap); // Define layers and add them to the control widget
 
             L.control.layers({
               'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                maxZoom: 19 //noWrap: true
-
+                maxZoom: 19
               }).addTo(this.leafMap),
               // Add default layer to map
               'OpenTopoMap': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                 attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-                maxZoom: 17 //noWrap: true
-
+                maxZoom: 17
               }),
               'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Imagery &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
@@ -259,17 +187,9 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
                 forcedOverlay: L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png', {
                   attribution: 'Labels by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                   subdomains: 'abcd',
-                  maxZoom: 20 //noWrap: true
-
+                  maxZoom: 20
                 })
               })
-            }).addTo(this.leafMap);
-            this.hoverMarker = L.circleMarker(L.latLng(0, 0), {
-              color: 'none',
-              fillColor: 'none',
-              fillOpacity: 1,
-              weight: 2,
-              radius: 7
             }).addTo(this.leafMap); // Events
 
             this.leafMap.on('baselayerchange', this.mapBaseLayerChange.bind(this));
@@ -310,8 +230,6 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
             }); // Set the global time range
 
             if (isFinite(bounds.from) && isFinite(bounds.to)) {
-              // KLUDGE: Create moment objects here to avoid a TypeError that
-              // occurs when Grafana processes normal numbers
               this.timeSrv.setTime({
                 from: moment.utc(bounds.from),
                 to: moment.utc(bounds.to)
@@ -321,7 +239,6 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
         }, {
           key: "addDataToMap",
           value: function addDataToMap() {
-            //console.log(this.coords);
             this.locationLayer.clearLayers();
 
             for (var i = 0; i < this.coords.length; i++) {
@@ -333,7 +250,6 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
                 iconSize: [36, 42],
                 popupAnchor: [0, -30]
               });
-              console.log(this.coords[i] + "llll");
               var meMarker = L.marker(this.coords[i].position, {
                 icon: meIcon,
                 title: "AQI is " + this.coords[i].pollution + " in " + this.coords[i].location
@@ -344,53 +260,22 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
             this.zoomToFit();
           }
         }, {
-          key: "getMinOrMax",
-          value: function getMinOrMax(latLongObj, maxMin, latLong) {}
-        }, {
-          key: "getBounds",
-          value: function getBounds(markersObj) {
-            var maxLat = getMinOrMax(markersObj, "max", "lat");
-            var minLat = getMinOrMax(markersObj, "min", "lat");
-            var maxLng = getMinOrMax(markersObj, "max", "lng");
-            var minLng = getMinOrMax(markersObj, "min", "lng");
-            var southWest = new L.LatLng(minLat, minLng);
-            var northEast = new L.LatLng(maxLat, maxLng);
-            return new L.LatLngBounds(southWest, northEast);
-          }
-        }, {
           key: "zoomToFit",
           value: function zoomToFit() {
             if (this.panel.autoZoom) {
-              // this.leafMap.fitWorld();
-              //       var corner1 = L.latLng(40.712, -74.227),
-              // corner2 = L.latLng(40.774, -74.125),
-              // bounds = L.latLngBounds(corner1, corner2);
               this.leafMap.fitBounds(this.locationLayer.getBounds().pad(0.5));
-            }
-          }
-        }, {
-          key: "refreshColors",
-          value: function refreshColors() {
-            if (this.polyline) {
-              this.polyline.setStyle({
-                color: this.panel.lineColor
-              });
             }
           }
         }, {
           key: "onDataReceived",
           value: function onDataReceived(data) {
             this.setupMap();
-            console.log(data.length);
 
             if (data.length === 0) {
-              // No data or incorrect data, show a world map and abort
+              // No data , show a world map and abort
               this.leafMap.setView([0, 0], 1);
               return;
             }
-
-            console.log(data); // Asumption is that there are an equal number of properly matched timestamps
-            // TODO: proper joining by timestamp?
 
             this.coords.length = 0;
 
@@ -399,7 +284,6 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
               var lat = data[1].datapoints[i];
               var lon = data[2].datapoints[i];
               var city = data[3].datapoints[i][0];
-              console.log(lat[0]);
               this.coords.push({
                 position: L.latLng(lat[0], lon[0]),
                 location: city,
@@ -412,13 +296,13 @@ System.register(["./leaflet/leaflet.js", "moment", "app/core/app_events", "app/p
           }
         }]);
 
-        return TrackMapCtrl;
+        return MapCtrl;
       }(MetricsPanelCtrl));
 
-      _export("TrackMapCtrl", TrackMapCtrl);
+      _export("MapCtrl", MapCtrl);
 
-      TrackMapCtrl.templateUrl = 'partials/module.html';
+      MapCtrl.templateUrl = 'partials/module.html';
     }
   };
 });
-//# sourceMappingURL=trackmap_ctrl.js.map
+//# sourceMappingURL=map_ctrl.js.map

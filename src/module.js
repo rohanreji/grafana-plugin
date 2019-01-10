@@ -1,5 +1,4 @@
-import {TrackMapCtrl} from './trackmap_ctrl';
-
+import {MapCtrl} from './map_ctrl';
 export {
-  TrackMapCtrl as PanelCtrl
+  MapCtrl as PanelCtrl
 };

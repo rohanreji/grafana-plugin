@@ -1,9 +1,9 @@
 {
   "type": "panel",
-  "name": "test",
+  "name": "map",
   "id": "rohanreji93-test-panel",
   "info": {
-    "description": "Test panel for grafana",
+    "description": "Map panel for grafana",
     "author": {
       "name": "Rohan Reji",
       "url": "http://rohanreji.com"
